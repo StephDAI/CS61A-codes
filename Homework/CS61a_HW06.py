@@ -98,8 +98,14 @@ class Link:
         self.first = first
         self.rest = rest
     def __repr__(self):
-        if self.rest == Link.empty: return f"Link({self.first})"
-        return f"Link({self.first},{self.rest})"
+        if self.rest is Link.empty: return f"Link({repr(self.first)})"
+        return f"Link({repr(self.first)},{repr(self.rest)})"
+    def __str__(self):
+        string = "<"
+        while self.rest is not Link.empty:
+            string = string + str(self.first) + " "
+            self = self.rest
+        return string + str(self.first) + ">"
 
 def store_digits(n):
     """Stores the digits of a positive number n in a linked list.
@@ -130,3 +136,79 @@ def store_digits(n):
         n //= 10
     l.append(n)
     return store(l)
+
+def deep_map_mut(func, s):
+    """Mutates a deep link s by replacing each item found with the
+    result of calling func on the item. Does NOT create new Links (so
+    no use of Link's constructor).
+
+    Does not return the modified Link object.
+
+    >>> link1 = Link(3, Link(Link(4), Link(5, Link(6))))
+    >>> print(link1)
+    <3 <4> 5 6>
+    >>> # Disallow the use of making new Links before calling deep_map_mut
+    >>> Link.__init__, hold = lambda *args: print("Do not create any new Links."), Link.__init__
+    >>> try:
+    ...     deep_map_mut(lambda x: x * x, link1)
+    ... finally:
+    ...     Link.__init__ = hold
+    >>> print(link1)
+    <9 <16> 25 36>
+    """
+    "*** YOUR CODE HERE ***"
+        
+    if isinstance(s.first,Link):
+        deep_map_mut(func, s.first)
+        deep_map_mut(func, s.rest)
+    else:
+        s.first = func(s.first) 
+        if s.rest is not Link.empty:
+            deep_map_mut(func, s.rest)
+
+# link1 = Link(3, Link(Link(4), Link(5, Link(6))))
+# print(link1)
+# # Disallow the use of making new Links before calling deep_map_mut
+# Link.__init__, hold = lambda *args: print("Do not create any new Links."), Link.__init__
+# try:
+#     deep_map_mut(lambda x: x * x, link1)
+# finally:
+#     Link.__init__ = hold
+# print(link1)
+def two_list(vals, counts):
+    """
+    Returns a linked list according to the two lists that were passed in. Assume
+    vals and counts are the same size. Elements in vals represent the value, and the
+    corresponding element in counts represents the number of this value desired in the
+    final linked list. Assume all elements in counts are greater than 0. Assume both
+    lists have at least one element.
+    >>> a = [1, 3]
+    >>> b = [1, 1]
+    >>> c = two_list(a, b)
+    >>> c
+    Link(1, Link(3))
+    >>> a = [1, 3, 2]
+    >>> b = [2, 2, 1]
+    >>> c = two_list(a, b)
+    >>> c
+    Link(1, Link(1, Link(3, Link(3, Link(2)))))
+    """
+    "*** YOUR CODE HERE ***"
+    bind = zip(vals,counts)
+    final_list = []
+    for i in bind:
+        for _ in range(i[1]):
+            final_list.append(i[0])
+    def store(arr):
+        if len(arr) == 1:return Link(arr[0])
+        return Link(arr[0],store(arr[1:]))
+    return store(final_list)
+a = [1, 3]
+b = [1, 1]
+c = two_list(a, b)
+print(c)
+
+a = [1, 3, 2]
+b = [2, 2, 1]
+c = two_list(a, b)
+print(c)
